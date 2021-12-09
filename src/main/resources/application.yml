@@ -1,0 +1,19 @@
+server:
+  port: 9000
+spring:
+  profiles:
+    active: dev
+  datasource:
+#    driver-class-name: oracle.jdbc.driver.OracleDriver
+#    driver-class-name: org.hibernate.dialect.Oracle12cDialect
+    url: jdbc:oracle:thin:@127.0.0.1:1521:XE
+    username: sanmaru
+    password: oracle
+  jpa:
+    hibernate:
+      # 테이블 자동 생성을 위해 필요함
+#      ddl-auto: create
+      ddl-auto: none
+    generate-ddl: true
+    show-sql: true
+    database: oracle
