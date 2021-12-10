@@ -12,7 +12,7 @@
 <body>
     <div class="container">
         <form  th:action="@{/login}" class="form-signin" method="post" >
-            <h2 class="form-signin-heading">Please sign in</h2>
+            <h2 class="form-signin-heading">Please sign in2</h2>
             <div th:if="${param.error}" class="alert alert-danger" role="alert" >자격 증명에 실패하였습니다.</div>
             <div th:if="${param.logout}" class="alert alert-success" role="alert" >You have been signed out</div>
             <a th:href="@{/logout}">Log Out</a>

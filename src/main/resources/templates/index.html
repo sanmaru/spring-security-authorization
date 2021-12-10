@@ -3,7 +3,25 @@
     <title>Hello Security!</title>
 </head>
 <body>
+<!--
     <h1>Hello Security</h1>
     <a th:href="@{/logout}">Log Out</a>
+-->
+<div style="float: right" th:fragment="logout" sec:authorize="isAuthenticated()">
+    <div style="float:left">
+        <span style="font-weight:bold">User: </span><span sec:authentication="name"></span>
+    </div>
+    <div style="float:none">&nbsp;</div>
+    <div style="float:right">
+        <form action="#" th:action="@{/logout}" method="post">
+            <input type="submit" value="Logout" />
+        </form>
+    </div>
+</div>
+<h1>OAuth 2.0 Login with Spring Security</h1>
+<div>
+    You are successfully logged in <span style="font-weight:bold" th:text="${userName}"></span>
+</div>
+<div>&nbsp;</div>
 </body>
 </html>

@@ -38,19 +38,15 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Role;
 import org.springframework.core.annotation.Order;
-import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.ObjectPostProcessor;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.oidc.OidcScopes;
@@ -82,13 +78,15 @@ import javax.sql.DataSource;
  */
 
 @Configuration
-public class OAuth2SecurityConfiguration {
+public class OAuth2SecurityConfiguration{
 
     final static Logger logger = LoggerFactory.getLogger(OAuth2SecurityConfiguration.class);
 
     @Autowired
     CustomUserRepositoryUserDetailsService customUserRepositoryUserDetailsService;
 
+
+    @Bean
     @Order(1)
     public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
         System.out.println("============== : authorizationServerSecurityFilterChain");
@@ -96,13 +94,14 @@ public class OAuth2SecurityConfiguration {
         return http.formLogin(Customizer.withDefaults()).build();
     }
 
+
     @Bean
     @Order(1)
-//    public SecurityFilterChain standardSecurityFilterChain(HttpSecurity http,
-//                                                           AuthorizationManager<RequestAuthorizationContext> mfaAuthorizationManager) throws Exception {
-    public SecurityFilterChain standardSecurityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain standardSecurityFilterChain(HttpSecurity http,
+                                                           AuthorizationManager<RequestAuthorizationContext> mfaAuthorizationManager) throws Exception {
+//    public SecurityFilterChain standardSecurityFilterChain(HttpSecurity http) throws Exception {
+        logger.info("============== : standardSecurityFilterChain");
 
-        System.out.println("============== : standardSecurityFilterChain");
         MfaAuthenticationHandler mfaAuthenticationHandler = new MfaAuthenticationHandler("/mfa_totp");
         http.userDetailsService(customUserRepositoryUserDetailsService);
         http
@@ -110,7 +109,7 @@ public class OAuth2SecurityConfiguration {
                         .mvcMatchers("/mfa_totp").access(mfaAuthorizationManager())
                         .anyRequest().authenticated()
                 )
-//                .formLogin(Customizer.withDefaults())
+
                 .formLogin((form) -> form
                         .successHandler(mfaAuthenticationHandler)
                         .failureHandler(mfaAuthenticationHandler)
@@ -144,7 +143,7 @@ public class OAuth2SecurityConfiguration {
     }
 
     @Bean
-    public RegisteredClientRepository registeredClientRepository() {
+    public RegisteredClientRepository registeredClientRepository(JdbcTemplate jdbcTemplate) {
         System.out.println("============== : registeredClientRepository");
         // @formatter:off
         RegisteredClient loginClient = RegisteredClient.withId(UUID.randomUUID().toString())
@@ -160,16 +159,14 @@ public class OAuth2SecurityConfiguration {
                 .scope(OidcScopes.PROFILE)
                 .clientSettings(ClientSettings.builder().requireAuthorizationConsent(true).build())
                 .build();
-        RegisteredClient registeredClient = RegisteredClient.withId(UUID.randomUUID().toString())
-                .clientId("messaging-client")
-                .clientSecret("{noop}secret")
-                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
-                .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
-                .scope("message:read")
-                .build();
         // @formatter:on
-
-        return new InMemoryRegisteredClientRepository(loginClient, registeredClient);
+        /*
+        JdbcRegisteredClientRepository registeredClientRepository = new JdbcRegisteredClientRepository(jdbcTemplate);
+        registeredClientRepository.save(loginClient);
+        return registeredClientRepository;
+        SELECT id, client_id, client_id_issued_at, client_secret, client_secret_expires_at, client_name, client_authentication_methods, authorization_grant_types, redirect_uris, scopes, client_settings,token_settings FROM oauth2_registered_client WHERE id = ?
+         */
+        return new InMemoryRegisteredClientRepository(loginClient);
     }
 
     @Bean

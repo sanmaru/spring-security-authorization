@@ -16,14 +16,12 @@
 
 package com.sanmaru.security.mfa.custom;
 
-import java.security.Principal;
+
 import java.util.Collections;
 
 import org.springframework.security.authentication.AbstractAuthenticationToken;
-import org.springframework.security.core.AuthenticatedPrincipal;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.CredentialsContainer;
-import org.springframework.security.core.userdetails.UserDetails;
 
 public class MfaAuthentication extends AbstractAuthenticationToken {
 
@@ -59,19 +57,5 @@ public class MfaAuthentication extends AbstractAuthenticationToken {
 	public Authentication getFirst() {
 		return this.first;
 	}
-//
-//	@Override
-//	public String getName() {
-//		if (this.getPrincipal() instanceof CustomUserDetails) {
-//			return ((CustomUserDetails) this.getPrincipal()).getUsername();
-//		}
-//		if (this.getPrincipal() instanceof AuthenticatedPrincipal) {
-//			return ((AuthenticatedPrincipal) this.getPrincipal()).getName();
-//		}
-//		if (this.getPrincipal() instanceof Principal) {
-//			return ((Principal) this.getPrincipal()).getName();
-//		}
-//		return (this.getPrincipal() == null) ? "" : this.getPrincipal().toString();
-//	}
 
 }
